@@ -1,30 +1,14 @@
-# Workbook 6: analyze NHANES data
+# Workbook 8
 
-# Set up
-library(foreign)
-library(survey)
-library(Hmisc)
-library(dplyr)
+library(ggplot2)
 
-demo <- sasxport.get("DEMO_I.XPT")
-alc <- sasxport.get("ALQ_I.XPT")
+data <- read.csv(file='marijuana-use-2016.csv',header=TRUE, sep=",")
+recent <- data[data$Year == '2014-2016' & data$Marijuana.Use == 'Marijuana Use in the Past Year' & data$Variable == 'Marijuana Use'
+               & data$Age.Range == '12-17', ]
 
-nhanes <- left_join(demo, alc, by = "seqn")
+ggplot(data=recent, aes(x=recent$Region, y= recent$Value)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(title= "Percentage of 12-17 year olds who have smoked \n marijuana in the last year") + xlab("Region") + ylab("Percentage")
 
-nhanes <- nhanes %>%
-  mutate( alq151 = replace(alq151, alq151 == 2, 0), 
-          alq151 = replace(alq151, alq151 == 7 | alq151 == 9, NA))
 
-sum(nhanes$wtint2yr)
-
-nhanes_design <- svydesign(
-  weights = ~wtint2yr,
-  data = nhanes,
-  id = ~sdmvpsu,
-  strata = ~sdmvstra,
-  nest = TRUE
-)
-
-svymean(~alq151, nhanes_design, na.rm = T)
-
-svyby(~alq151, ~riagendr, nhanes_design, svymean, na.rm = T)
+recent_older <- data[data$Year == '2014-2016' & data$Marijuana.Use == 'Marijuana Use in the Past Year' & data$Variable == 'Marijuana Use'
+                     & data$Age.Range == 'Over 17', ]
+ggplot(data=recent_older, aes(x=recent$Region, y= recent$Value)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(title= "Percentage of people over 17 year olds who have smoked \n marijuana in the last year") + xlab("Region") + ylab("Percentage")
